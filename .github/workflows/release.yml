@@ -1,0 +1,86 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  CARGO_TAG_NAME: "GitHub Actions"
+  CARGO_TAG_EMAIL: "github-actions@users.noreply.github.com"
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  Release:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          token: ${{ github.token }}
+
+      - name: Git setup
+        run: |
+          git config user.name "$CARGO_TAG_NAME"
+          git config user.email "$CARGO_TAG_EMAIL"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Bump version
+        run: npm version patch --no-git-tag-version
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: network=host
+
+      - name: Log into registry
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Read version
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            dimitrmok/tradingbutler-admin:${{ steps.version.outputs.version }}
+            dimitrmok/tradingbutler-admin:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Commit and push version bump
+        run: |
+          git add package.json package-lock.json
+          git commit -m "Release ${{ steps.version.outputs.version }}
+
+          [skip ci]"
+          git tag "v${{ steps.version.outputs.version }}"
+          GIT_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}
+          git push origin $GIT_BRANCH
+          git push origin $GIT_BRANCH --tags
