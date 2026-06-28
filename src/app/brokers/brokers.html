@@ -1,0 +1,436 @@
+<div class="page-head">
+    <div>
+        <span class="tb-eyebrow">Broker management</span>
+        <h1 class="brokers__title">Brokers</h1>
+    </div>
+    <button class="btn-primary" type="button" (click)="openForm()">+ New broker</button>
+</div>
+
+@if (!loading() && !loadError()) {
+    <div class="stats">
+        <div class="stat">
+            <span class="stat__value tb-num">{{ stats().total }}</span>
+            <span class="stat__label">Total</span>
+        </div>
+        <div class="stat">
+            <span class="stat__value tb-num" [class.stat__value--green]="stats().active > 0">{{
+                stats().active
+            }}</span>
+            <span class="stat__label">Active keys</span>
+        </div>
+        <div class="stat">
+            <span class="stat__value tb-num">{{ stats().restricted }}</span>
+            <span class="stat__label">IP-restricted</span>
+        </div>
+    </div>
+}
+
+@if (issued(); as broker) {
+    <section class="card key-reveal" aria-label="New API key">
+        <div class="card__header">
+            <h2 class="card__title">API key for {{ broker.name }}</h2>
+        </div>
+        <div class="card__body">
+            <p class="key-reveal__warning">
+                <strong>Copy this key now.</strong> It will not be shown again — only its hash is
+                stored.
+            </p>
+            <div class="key-reveal__row">
+                <code class="key-reveal__value tb-num">{{ broker.api_key }}</code>
+                <button class="btn-ghost btn-sm" type="button" (click)="copyKey()">
+                    {{ copied() ? 'Copied' : 'Copy' }}
+                </button>
+            </div>
+            <button class="key-reveal__dismiss" type="button" (click)="dismissKey()">
+                I've saved it — dismiss
+            </button>
+        </div>
+    </section>
+}
+
+<section class="card" aria-label="Existing brokers">
+    <div class="card__header">
+        <h2 class="card__title">All brokers</h2>
+    </div>
+
+    @if (rowError(); as error) {
+        <div class="card__body">
+            <p class="form-error" role="alert">{{ error }}</p>
+        </div>
+    }
+
+    @if (loading()) {
+        <p class="card__body muted">Loading…</p>
+    } @else if (loadError(); as error) {
+        <div class="card__body">
+            <p class="form-error" role="alert">{{ error }}</p>
+        </div>
+    } @else if (brokers().length === 0) {
+        <div class="empty card__body">
+            <p class="muted">No brokers yet.</p>
+            <button class="btn-ghost" type="button" (click)="openForm()">
+                + Add your first broker
+            </button>
+        </div>
+    } @else {
+        <table class="broker-table">
+            <thead>
+                <tr>
+                    <th class="logo-col"></th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Key</th>
+                    <th>Open account URL</th>
+                    <th>Whitelisted IPs</th>
+                    <th class="actions-col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (broker of brokers(); track broker.id) {
+                    <tr>
+                        <td class="logo-col">
+                            @if (broker.logo) {
+                                <img
+                                    class="broker-logo"
+                                    [src]="broker.logo"
+                                    [alt]="broker.name + ' logo'"
+                                />
+                            } @else {
+                                <span class="broker-logo-placeholder" aria-hidden="true"></span>
+                            }
+                        </td>
+                        <td class="tb-num">{{ broker.id }}</td>
+                        <td>{{ broker.name }}</td>
+                        <td>
+                            @if (broker.has_key) {
+                                <span class="badge badge--ok">Active</span>
+                            } @else {
+                                <span class="badge badge--off">No key</span>
+                            }
+                        </td>
+                        <td>
+                            @if (urlEditingId() === broker.id) {
+                                <div class="ip-edit">
+                                    <input
+                                        type="url"
+                                        autocomplete="off"
+                                        placeholder="https://example.com/open-account"
+                                        [(ngModel)]="urlEditInput"
+                                        [disabled]="busyId() === broker.id"
+                                    />
+                                    <div class="ip-edit__actions">
+                                        <button
+                                            class="btn-ghost btn-sm"
+                                            type="button"
+                                            [disabled]="busyId() === broker.id"
+                                            (click)="saveUrl(broker)"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            class="btn-link"
+                                            type="button"
+                                            [disabled]="busyId() === broker.id"
+                                            (click)="cancelEditUrl()"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            } @else if (broker.open_account_url) {
+                                <a
+                                    class="url-link"
+                                    [href]="broker.open_account_url"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    >{{ broker.open_account_url }}</a
+                                >
+                            } @else {
+                                <span class="muted-inline">—</span>
+                            }
+                        </td>
+                        <td>
+                            @if (editingId() === broker.id) {
+                                <div class="ip-edit">
+                                    <input
+                                        type="text"
+                                        autocomplete="off"
+                                        spellcheck="false"
+                                        placeholder="comma/space separated, empty = any"
+                                        [(ngModel)]="editIps"
+                                        [disabled]="busyId() === broker.id"
+                                    />
+                                    <div class="ip-edit__actions">
+                                        <button
+                                            class="btn-ghost btn-sm"
+                                            type="button"
+                                            [disabled]="busyId() === broker.id"
+                                            (click)="saveIps(broker)"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            class="btn-link"
+                                            type="button"
+                                            [disabled]="busyId() === broker.id"
+                                            (click)="cancelEditIps()"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            } @else if (broker.allowed_ips.length === 0) {
+                                <span class="muted-inline">Any</span>
+                            } @else {
+                                <span class="ip-chips">
+                                    @for (ip of broker.allowed_ips; track ip) {
+                                        <code class="ip-chip tb-num">{{ ip }}</code>
+                                    }
+                                </span>
+                            }
+                        </td>
+                        <td class="actions-col">
+                            <div class="row-actions">
+                                <button
+                                    class="btn-link"
+                                    type="button"
+                                    [disabled]="busyId() === broker.id || editingId() === broker.id"
+                                    (click)="startEditIps(broker)"
+                                >
+                                    Edit IPs
+                                </button>
+                                <button
+                                    class="btn-link"
+                                    type="button"
+                                    [disabled]="busyId() === broker.id || urlEditingId() === broker.id"
+                                    (click)="startEditUrl(broker)"
+                                >
+                                    Edit URL
+                                </button>
+                                <button
+                                    class="btn-link"
+                                    type="button"
+                                    [disabled]="busyId() === broker.id"
+                                    (click)="openLogoEditor(broker)"
+                                >
+                                    Edit logo
+                                </button>
+                                <button
+                                    class="btn-link"
+                                    type="button"
+                                    [disabled]="busyId() === broker.id"
+                                    (click)="regenerate(broker)"
+                                >
+                                    Regenerate
+                                </button>
+                                <button
+                                    class="btn-link btn-link--danger"
+                                    type="button"
+                                    [disabled]="busyId() === broker.id"
+                                    (click)="remove(broker)"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+<!-- Create broker modal -->
+@if (showForm()) {
+    <div class="modal" (click)="closeForm()" (keydown.escape)="closeForm()" tabindex="-1">
+        <div
+            class="modal__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Add a broker"
+            (click)="$event.stopPropagation()"
+        >
+            <div class="modal__head">
+                <h2 class="card__title">Add a broker</h2>
+                <button class="modal__close" type="button" aria-label="Close" (click)="closeForm()">
+                    ×
+                </button>
+            </div>
+
+            <form class="broker-form" (ngSubmit)="submit()">
+                <div class="field">
+                    <label for="broker-id">Broker ID</label>
+                    <input
+                        id="broker-id"
+                        name="brokerId"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="e.g. alphafx"
+                        [(ngModel)]="idInput"
+                        [disabled]="submitting()"
+                    />
+                    <small>Lowercase, no spaces or colons. Used in Redis keys and stream names.</small>
+                </div>
+
+                <div class="field">
+                    <label for="broker-name">Display name</label>
+                    <input
+                        id="broker-name"
+                        name="brokerName"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="e.g. AlphaFX"
+                        [(ngModel)]="nameInput"
+                        [disabled]="submitting()"
+                    />
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Logo</span>
+                    <div
+                        class="logo-zone"
+                        [class.logo-zone--filled]="logoInput()"
+                        (click)="createLogoRef.click()"
+                        role="button"
+                        tabindex="0"
+                        (keydown.enter)="createLogoRef.click()"
+                        (keydown.space)="createLogoRef.click()"
+                    >
+                        @if (logoInput()) {
+                            <img class="logo-zone__img" [src]="logoInput()" alt="Logo preview" />
+                            <div class="logo-zone__overlay">Change</div>
+                        } @else {
+                            <div class="logo-zone__empty">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 9.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" /></svg>
+                                <span>Upload logo</span>
+                            </div>
+                        }
+                    </div>
+                    <input
+                        #createLogoRef
+                        type="file"
+                        accept="image/*"
+                        style="display:none"
+                        (change)="onLogoFile($event)"
+                        [disabled]="submitting()"
+                    />
+                </div>
+
+                <div class="field">
+                    <label for="broker-url">Open account URL</label>
+                    <input
+                        id="broker-url"
+                        name="brokerUrl"
+                        type="url"
+                        autocomplete="off"
+                        placeholder="https://example.com/open-account"
+                        [(ngModel)]="openAccountUrlInput"
+                        [disabled]="submitting()"
+                    />
+                </div>
+
+                <div class="field">
+                    <label for="broker-ips">
+                        Whitelisted IPs <span class="optional">(optional)</span>
+                    </label>
+                    <input
+                        id="broker-ips"
+                        name="brokerIps"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="e.g. 203.0.113.5, 10.0.0.0/8"
+                        [(ngModel)]="ipsInput"
+                        [disabled]="submitting()"
+                    />
+                    <small>Comma- or space-separated IPs/CIDRs. Leave empty for no restriction.</small>
+                </div>
+
+                @if (formError(); as error) {
+                    <p class="form-error" role="alert">{{ error }}</p>
+                }
+
+                <div class="modal__actions">
+                    <button class="btn-ghost" type="button" (click)="closeForm()">Cancel</button>
+                    <button class="btn-primary" type="submit" [disabled]="submitting()">
+                        {{ submitting() ? 'Creating…' : 'Create broker' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<!-- Edit logo modal -->
+@if (logoEditingId(); as brokerId) {
+    <div
+        class="modal"
+        (click)="closeLogoEditor()"
+        (keydown.escape)="closeLogoEditor()"
+        tabindex="-1"
+    >
+        <div
+            class="modal__dialog modal__dialog--sm"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit logo"
+            (click)="$event.stopPropagation()"
+        >
+            <div class="modal__head">
+                <h2 class="card__title">Edit logo</h2>
+                <button
+                    class="modal__close"
+                    type="button"
+                    aria-label="Close"
+                    (click)="closeLogoEditor()"
+                >
+                    ×
+                </button>
+            </div>
+
+            <div class="field">
+                <span class="field-label">Logo image</span>
+                <div
+                    class="logo-zone logo-zone--lg"
+                    [class.logo-zone--filled]="logoEditFile()"
+                    (click)="editLogoRef.click()"
+                    role="button"
+                    tabindex="0"
+                    (keydown.enter)="editLogoRef.click()"
+                    (keydown.space)="editLogoRef.click()"
+                >
+                    @if (logoEditFile()) {
+                        <img class="logo-zone__img" [src]="logoEditFile()" alt="Logo preview" />
+                        <div class="logo-zone__overlay">Change</div>
+                    } @else {
+                        <div class="logo-zone__empty">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 9.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" /></svg>
+                            <span>Click to upload</span>
+                        </div>
+                    }
+                </div>
+                <input
+                    #editLogoRef
+                    type="file"
+                    accept="image/*"
+                    style="display:none"
+                    (change)="onLogoEditFile($event)"
+                    [disabled]="busyId() === brokerId"
+                />
+            </div>
+
+            <div class="modal__actions" style="margin-top: 1.25rem">
+                <button class="btn-ghost" type="button" (click)="closeLogoEditor()">Cancel</button>
+                <button
+                    class="btn-primary"
+                    type="button"
+                    [disabled]="busyId() === brokerId || !logoEditFile()"
+                    (click)="saveLogo(brokerId)"
+                >
+                    {{ busyId() === brokerId ? 'Saving…' : 'Save logo' }}
+                </button>
+            </div>
+        </div>
+    </div>
+}

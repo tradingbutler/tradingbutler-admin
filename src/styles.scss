@@ -1,0 +1,87 @@
+/* Theme tokens shared with the public site (web/src/styles.scss). Keep in sync. */
+:root {
+    /* Surfaces — layered dark navy */
+    --tb-bg: #0a0d13;
+    --tb-surface: #0f141e;
+    --tb-surface-2: #151c2a;
+    --tb-surface-3: #1b2335;
+    --tb-border: #212a3b;
+    --tb-border-strong: #2e3a4f;
+
+    /* Text */
+    --tb-text: #eef1f6;
+    --tb-text-muted: #9aa4b6;
+    --tb-text-faint: #626d80;
+
+    /* Brand */
+    --tb-accent: #e0a93b;
+    --tb-accent-hover: #f1bd54;
+    --tb-accent-soft: rgba(224, 169, 59, 0.12);
+    --tb-accent-contrast: #1a1205;
+
+    /* Semantic */
+    --tb-green: #2bb673;
+    --tb-green-soft: rgba(43, 182, 115, 0.14);
+    --tb-red: #e5544b;
+    --tb-red-soft: rgba(229, 84, 75, 0.14);
+
+    /* Shape & depth */
+    --tb-radius: 14px;
+    --tb-radius-sm: 9px;
+    --tb-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+    --tb-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+    /* Layout */
+    --tb-maxw: 960px;
+
+    /* Type */
+    --tb-font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --tb-font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    background:
+        radial-gradient(1200px 600px at 78% -8%, rgba(224, 169, 59, 0.06), transparent 60%),
+        radial-gradient(900px 500px at 0% 0%, rgba(20, 148, 196, 0.05), transparent 55%),
+        var(--tb-bg);
+    background-attachment: fixed;
+    color: var(--tb-text);
+    font-family: var(--tb-font);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--tb-font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+a {
+    color: inherit;
+}
+
+.tb-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+}
+
+.tb-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tb-accent);
+}

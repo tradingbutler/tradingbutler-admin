@@ -1,0 +1,24 @@
+:host {
+    display: block;
+}
+
+.admin-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-main {
+    flex: 1;
+    min-width: 0;
+    padding: 2rem 2.5rem 4rem;
+}
+
+@media (max-width: 768px) {
+    .admin-shell {
+        flex-direction: column;
+    }
+
+    .admin-main {
+        padding: 1.5rem 1rem 3rem;
+    }
+}
