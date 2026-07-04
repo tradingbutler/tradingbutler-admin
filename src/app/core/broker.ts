@@ -7,6 +7,9 @@ export interface Broker {
     open_account_url: string;
     /** Full data URL (`data:image/...;base64,...`) or null when no logo is set. */
     logo: string | null;
+    /** Broker-specific alias -> canonical symbol code (e.g. `"BITCOIN": "BTCUSD"`),
+     *  applied by the collector before storing a tick. */
+    symbol_map: Record<string, string>;
 }
 
 /**

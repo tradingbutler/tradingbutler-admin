@@ -14,6 +14,10 @@ import { Broker, IssuedKey } from '../core/broker';
 export class Brokers implements OnInit {
     private readonly api = inject(BrokerApi);
 
+    protected objectKeys(obj: Record<string, string> | null | undefined): string[] {
+        return Object.keys(obj ?? {});
+    }
+
     protected readonly brokers = signal<Broker[]>([]);
     protected readonly loading = signal(true);
     protected readonly loadError = signal('');
@@ -54,6 +58,10 @@ export class Brokers implements OnInit {
     // Logo editor
     protected readonly logoEditingId = signal('');
     protected readonly logoEditFile = signal('');
+
+    // Symbol map editor
+    protected readonly symbolMapEditingId = signal('');
+    protected readonly symbolMapRows = signal<{ alias: string; canonical: string }[]>([]);
 
     ngOnInit(): void {
         this.load();
@@ -225,6 +233,43 @@ export class Brokers implements OnInit {
     protected saveLogo(id: string): void {
         this.runRowAction(id, this.api.updateLogo(id, this.logoEditFile()), () =>
             this.closeLogoEditor(),
+        );
+    }
+
+    // Symbol map editor
+    protected openSymbolMapEditor(broker: Broker): void {
+        this.symbolMapEditingId.set(broker.id);
+        const rows = Object.entries(broker.symbol_map ?? {}).map(([alias, canonical]) => ({
+            alias,
+            canonical,
+        }));
+        this.symbolMapRows.set(rows.length > 0 ? rows : [{ alias: '', canonical: '' }]);
+        this.rowError.set('');
+    }
+
+    protected closeSymbolMapEditor(): void {
+        this.symbolMapEditingId.set('');
+        this.symbolMapRows.set([]);
+    }
+
+    protected addSymbolMapRow(): void {
+        this.symbolMapRows.update((rows) => [...rows, { alias: '', canonical: '' }]);
+    }
+
+    protected removeSymbolMapRow(index: number): void {
+        this.symbolMapRows.update((rows) => rows.filter((_, i) => i !== index));
+    }
+
+    protected saveSymbolMap(id: string): void {
+        const symbol_map: Record<string, string> = {};
+        for (const { alias, canonical } of this.symbolMapRows()) {
+            const a = alias.trim();
+            const c = canonical.trim();
+            if (!a || !c) continue;
+            symbol_map[a] = c;
+        }
+        this.runRowAction(id, this.api.updateSymbolMap(id, symbol_map), () =>
+            this.closeSymbolMapEditor(),
         );
     }
 

@@ -52,6 +52,12 @@ export class BrokerApi {
         });
     }
 
+    updateSymbolMap(id: string, symbol_map: Record<string, string>): Observable<Broker> {
+        return this.http.put<Broker>(`/api/brokers/${encodeURIComponent(id)}/symbol-map`, {
+            symbol_map,
+        });
+    }
+
     remove(id: string): Observable<void> {
         return this.http.delete<void>(`/api/brokers/${encodeURIComponent(id)}`);
     }

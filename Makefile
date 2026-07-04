@@ -1,8 +1,10 @@
 -include .env
 export
 
-dev:
+run:
 	npm start
+
+dev: run
 
 build:
 	npm run build

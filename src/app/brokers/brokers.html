@@ -82,6 +82,7 @@
                     <th>Key</th>
                     <th>Open account URL</th>
                     <th>Whitelisted IPs</th>
+                    <th>Symbol map</th>
                     <th class="actions-col">Actions</th>
                 </tr>
             </thead>
@@ -189,6 +190,19 @@
                                 </span>
                             }
                         </td>
+                        <td>
+                            @if (objectKeys(broker.symbol_map).length === 0) {
+                                <span class="muted-inline">None</span>
+                            } @else {
+                                <span class="ip-chips">
+                                    @for (alias of objectKeys(broker.symbol_map); track alias) {
+                                        <code class="ip-chip tb-num"
+                                            >{{ alias }} → {{ broker.symbol_map[alias] }}</code
+                                        >
+                                    }
+                                </span>
+                            }
+                        </td>
                         <td class="actions-col">
                             <div class="row-actions">
                                 <button
@@ -198,6 +212,14 @@
                                     (click)="startEditIps(broker)"
                                 >
                                     Edit IPs
+                                </button>
+                                <button
+                                    class="btn-link"
+                                    type="button"
+                                    [disabled]="busyId() === broker.id"
+                                    (click)="openSymbolMapEditor(broker)"
+                                >
+                                    Edit symbols
                                 </button>
                                 <button
                                     class="btn-link"
@@ -429,6 +451,98 @@
                     (click)="saveLogo(brokerId)"
                 >
                     {{ busyId() === brokerId ? 'Saving…' : 'Save logo' }}
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Edit symbol map modal -->
+@if (symbolMapEditingId(); as brokerId) {
+    <div
+        class="modal"
+        (click)="closeSymbolMapEditor()"
+        (keydown.escape)="closeSymbolMapEditor()"
+        tabindex="-1"
+    >
+        <div
+            class="modal__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit symbol map"
+            (click)="$event.stopPropagation()"
+        >
+            <div class="modal__head">
+                <h2 class="card__title">Edit symbol map</h2>
+                <button
+                    class="modal__close"
+                    type="button"
+                    aria-label="Close"
+                    (click)="closeSymbolMapEditor()"
+                >
+                    ×
+                </button>
+            </div>
+
+            <p class="muted" style="margin: 0 0 1rem">
+                Map this broker's own symbol names to the canonical codes used across brokers (e.g.
+                <code>BITCOIN</code> → <code>BTCUSD</code>). Ticks for a broker symbol with no
+                mapping are stored under their original name.
+            </p>
+
+            <div class="symbol-map-rows">
+                @for (row of symbolMapRows(); track $index) {
+                    <div class="symbol-map-row">
+                        <input
+                            type="text"
+                            autocomplete="off"
+                            spellcheck="false"
+                            placeholder="Broker symbol, e.g. BITCOIN"
+                            [(ngModel)]="row.alias"
+                            [disabled]="busyId() === brokerId"
+                        />
+                        <span class="symbol-map-row__arrow">→</span>
+                        <input
+                            type="text"
+                            autocomplete="off"
+                            spellcheck="false"
+                            placeholder="Canonical, e.g. BTCUSD"
+                            [(ngModel)]="row.canonical"
+                            [disabled]="busyId() === brokerId"
+                        />
+                        <button
+                            class="btn-link btn-link--danger btn-sm"
+                            type="button"
+                            aria-label="Remove mapping"
+                            [disabled]="busyId() === brokerId"
+                            (click)="removeSymbolMapRow($index)"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <button
+                class="btn-ghost btn-sm"
+                type="button"
+                [disabled]="busyId() === brokerId"
+                (click)="addSymbolMapRow()"
+            >
+                + Add mapping
+            </button>
+
+            <div class="modal__actions" style="margin-top: 1.25rem">
+                <button class="btn-ghost" type="button" (click)="closeSymbolMapEditor()">
+                    Cancel
+                </button>
+                <button
+                    class="btn-primary"
+                    type="button"
+                    [disabled]="busyId() === brokerId"
+                    (click)="saveSymbolMap(brokerId)"
+                >
+                    {{ busyId() === brokerId ? 'Saving…' : 'Save symbol map' }}
                 </button>
             </div>
         </div>
