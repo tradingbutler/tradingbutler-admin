@@ -1,0 +1,223 @@
+:host {
+    display: block;
+}
+
+/* ── Page header ── */
+
+.page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.analytics__title {
+    margin: 0.3rem 0 0;
+    font-size: clamp(1.6rem, 3.5vw, 2rem);
+    font-weight: 800;
+}
+
+/* ── Stat tiles ── */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat {
+    border: 1px solid var(--tb-border);
+    border-radius: var(--tb-radius);
+    background: var(--tb-surface);
+    box-shadow: var(--tb-shadow-sm);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+}
+
+.stat__value {
+    font-family: var(--tb-font-display);
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.stat__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--tb-text-faint);
+}
+
+/* ── Card ── */
+
+.card {
+    border: 1px solid var(--tb-border);
+    border-radius: var(--tb-radius);
+    background: var(--tb-surface);
+    box-shadow: var(--tb-shadow-sm);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--tb-border);
+}
+
+.card__title {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.card__body {
+    padding: 1.25rem 1.5rem;
+}
+
+.muted {
+    margin: 0;
+    color: var(--tb-text-muted);
+}
+
+.muted-inline {
+    color: var(--tb-text-muted);
+    font-size: 0.88rem;
+}
+
+.form-error {
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--tb-radius-sm);
+    background: var(--tb-red-soft);
+    color: var(--tb-red);
+    font-size: 0.86rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge--ok {
+    background: var(--tb-green-soft);
+    color: var(--tb-green);
+}
+
+/* ── Per-instance blocks ── */
+
+.analytics-instance {
+    & + & {
+        border-top: 1px solid var(--tb-border);
+    }
+}
+
+.analytics-instance__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.5rem;
+    background: var(--tb-surface-2);
+
+    code {
+        font-size: 0.85rem;
+        color: var(--tb-text);
+    }
+}
+
+.analytics-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 0.91rem;
+
+    th,
+    td {
+        text-align: left;
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid var(--tb-border);
+    }
+
+    td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    th {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--tb-text-faint);
+        white-space: nowrap;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+}
+
+/* Shared across both tables so matching columns line up at the same width;
+   the first (connection) column stays biggest but is capped rather than
+   left to consume all remaining space. */
+.col-connection {
+    width: 22rem;
+}
+
+.col-ip {
+    width: 12rem;
+}
+
+.col-broker {
+    width: 10rem;
+}
+
+.col-connected {
+    width: 10rem;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+    .stats {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .page-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .analytics-instance__head {
+        padding: 0.75rem 1rem;
+    }
+
+    .analytics-table {
+        th,
+        td {
+            padding: 0.65rem 1rem;
+        }
+    }
+}

@@ -1,0 +1,157 @@
+<div class="page-head">
+    <div>
+        <span class="tb-eyebrow">Live connections</span>
+        <h1 class="analytics__title">Analytics</h1>
+    </div>
+</div>
+
+@if (!loading() && !loadError()) {
+    <div class="stats">
+        <div class="stat">
+            <span class="stat__value tb-num">{{ stats().collectorConnections }}</span>
+            <span class="stat__label">Collector connections</span>
+        </div>
+        <div class="stat">
+            <span class="stat__value tb-num">{{ stats().collectorInstances }}</span>
+            <span class="stat__label">Collector instances</span>
+        </div>
+        <div class="stat">
+            <span class="stat__value tb-num">{{ stats().rateStreamerConnections }}</span>
+            <span class="stat__label">Rate-streamer connections</span>
+        </div>
+        <div class="stat">
+            <span class="stat__value tb-num">{{ stats().rateStreamerInstances }}</span>
+            <span class="stat__label">Rate-streamer instances</span>
+        </div>
+    </div>
+}
+
+@if (loading()) {
+    <section class="card">
+        <p class="card__body muted">Loading…</p>
+    </section>
+} @else if (loadError(); as error) {
+    <section class="card">
+        <div class="card__body">
+            <p class="form-error" role="alert">{{ error }}</p>
+        </div>
+    </section>
+} @else {
+    <!-- Collector -->
+    <section class="card" aria-label="Collector connections">
+        <div class="card__header">
+            <h2 class="card__title">Collector</h2>
+            <span class="badge badge--ok">{{ stats().collectorConnections }} connected</span>
+        </div>
+
+        @if (collector().length === 0) {
+            <p class="card__body muted">No collector instances reporting.</p>
+        } @else {
+            @for (instance of collector(); track instance.instance) {
+                <div class="analytics-instance">
+                    <div class="analytics-instance__head">
+                        <code class="tb-num">{{ instance.instance }}</code>
+                        <span class="muted-inline"
+                            >{{ instance.connections.length }} connection{{
+                                instance.connections.length === 1 ? '' : 's'
+                            }}</span
+                        >
+                    </div>
+
+                    @if (instance.connections.length > 0) {
+                        <table class="analytics-table">
+                            <colgroup>
+                                <col class="col-connection" />
+                                <col class="col-ip" />
+                                <col class="col-broker" />
+                                <col class="col-connected" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Connection</th>
+                                    <th>IP</th>
+                                    <th>Broker</th>
+                                    <th>Connected for</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (conn of instance.connections; track conn.id) {
+                                    <tr>
+                                        <td class="tb-num">{{ conn.id }}</td>
+                                        <td class="tb-num">{{ conn.ip }}</td>
+                                        <td>
+                                            @if (conn.broker) {
+                                                {{ conn.broker }}
+                                            } @else {
+                                                <span class="muted-inline">Unauthenticated</span>
+                                            }
+                                        </td>
+                                        <td class="tb-num">
+                                            {{ connectedFor(conn.connected_at) }}
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+        }
+    </section>
+
+    <!-- Rate-streamer -->
+    <section class="card" aria-label="Rate-streamer connections">
+        <div class="card__header">
+            <h2 class="card__title">Rate-streamer</h2>
+            <span class="badge badge--ok">{{ stats().rateStreamerConnections }} connected</span>
+        </div>
+
+        @if (rateStreamer().length === 0) {
+            <p class="card__body muted">No rate-streamer instances reporting.</p>
+        } @else {
+            @for (instance of rateStreamer(); track instance.instance) {
+                <div class="analytics-instance">
+                    <div class="analytics-instance__head">
+                        <code class="tb-num">{{ instance.instance }}</code>
+                        <span class="muted-inline"
+                            >{{ instance.connections.length }} connection{{
+                                instance.connections.length === 1 ? '' : 's'
+                            }}</span
+                        >
+                    </div>
+
+                    @if (instance.connections.length > 0) {
+                        <table class="analytics-table">
+                            <colgroup>
+                                <col class="col-connection" />
+                                <col class="col-ip" />
+                                <col class="col-broker" />
+                                <col class="col-connected" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Connection</th>
+                                    <th>IP</th>
+                                    <th>&dash;</th>
+                                    <th>Connected for</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (conn of instance.connections; track conn.id) {
+                                    <tr>
+                                        <td class="tb-num">{{ conn.id }}</td>
+                                        <td class="tb-num">{{ conn.ip }}</td>
+                                        <td class="tb-num">&nbsp;</td>
+                                        <td class="tb-num">
+                                            {{ connectedFor(conn.connected_at) }}
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+        }
+    </section>
+}
