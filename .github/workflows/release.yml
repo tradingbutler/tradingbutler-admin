@@ -35,14 +35,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Bump version
         run: npm version patch --no-git-tag-version
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
