@@ -1,4 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+    Component,
+    OnInit,
+    computed,
+    inject,
+    signal,
+    ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -9,6 +16,7 @@ import { Broker, IssuedKey } from '../core/broker';
     selector: 'app-brokers',
     imports: [FormsModule],
     templateUrl: './brokers.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './brokers.scss',
 })
 export class Brokers implements OnInit {

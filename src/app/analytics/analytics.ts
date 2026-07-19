@@ -1,4 +1,12 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import {
+    Component,
+    OnDestroy,
+    OnInit,
+    computed,
+    inject,
+    signal,
+    ChangeDetectionStrategy,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { AnalyticsApi } from '../core/analytics-api';
@@ -10,6 +18,7 @@ const REFRESH_INTERVAL_MS = 5_000;
     selector: 'app-analytics',
     imports: [],
     templateUrl: './analytics.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './analytics.scss',
 })
 export class Analytics implements OnInit, OnDestroy {
