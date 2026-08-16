@@ -1,5 +1,27 @@
+# Dependencies
 node_modules
+
+# Build output
 dist
 .angular
-.github
+
+# Git
 .git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# CI/CD
+.github
+
+# Tooling / editors
+.vscode
+.idea
+.claude
+Makefile
+
+# Documentation
+*.md

@@ -36,10 +36,14 @@ the `HOSTNAME`/`ID`-derived instance id each backend reports itself under), poll
 ## Develop
 
 ```bash
-npm install
-npm start            # ng serve on :4200, proxies /api → http://localhost:20000 (proxy.conf.json)
-npm run build        # production build → dist/admin
+bun install
+bun run start        # ng serve on :4200, proxies /api → http://localhost:20000 (proxy.conf.json)
+bun run build        # production build → dist/admin
 ```
+
+Bun is the package manager (`bun.lock`, pinned in `.bun-version`); the Angular CLI itself still
+runs on Node — Bun's Node compat layer reports a version the CLI rejects, so keep Node 26 on
+PATH locally (the Dockerfile layers the bun binary onto `node:26-slim` for the same reason).
 
 Run the backend alongside it:
 

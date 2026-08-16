@@ -34,17 +34,20 @@ jobs:
           git config user.name "$CARGO_TAG_NAME"
           git config user.email "$CARGO_TAG_EMAIL"
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 26
-          cache: npm
-
-      - name: Bump version
-        run: npm version patch --no-git-tag-version
+          bun-version-file: .bun-version
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
+
+      - name: Bump version
+        run: bun pm version patch --no-git-tag-version
+
+      - name: Read version
+        id: version
+        run: echo "version=$(bun --print "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -60,10 +63,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Read version
-        id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
@@ -78,7 +77,7 @@ jobs:
 
       - name: Commit and push version bump
         run: |
-          git add package.json package-lock.json
+          git add package.json bun.lock
           git commit -m "Release ${{ steps.version.outputs.version }}
 
           [skip ci]"
