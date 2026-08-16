@@ -21,9 +21,20 @@ build:
 test:
 	bun run test
 
+# Run the built server the way the container does
+start-prod:
+	node dist/admin/server/server.mjs
+
 # Build the Docker image
 docker-build:
 	docker build -t $(IMAGE_NAME) \
+		--progress=plain \
+		.
+
+# Same image, but on the distroless :debug base so `make shell` works
+docker-build-debug:
+	docker build -t $(IMAGE_NAME) \
+		--build-arg RUNNER_IMAGE=gcr.io/distroless/nodejs26-debian13:debug-nonroot \
 		--progress=plain \
 		.
 
@@ -53,12 +64,12 @@ up: docker-build stop docker-run
 logs:
 	docker logs -f $(CONTAINER_NAME)
 
-# Shell into container
+# Shell into container (requires `make docker-build-debug` — the release image has no shell)
 shell:
-	docker exec -it $(CONTAINER_NAME) /bin/sh
+	docker exec -it $(CONTAINER_NAME) /busybox/sh
 
 # Clean up
 clean: stop
 	docker rmi $(IMAGE_NAME) || true
 
-.PHONY: run dev install build test docker-build docker-run docker-push stop up logs shell clean
+.PHONY: run dev install build test start-prod docker-build docker-build-debug docker-run docker-push stop up logs shell clean
