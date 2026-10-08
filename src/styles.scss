@@ -1,29 +1,34 @@
 /* Theme tokens shared with the public site (web/src/styles.scss). Keep in sync. */
 :root {
-    /* Surfaces — layered dark navy */
-    --tb-bg: #0a0d13;
-    --tb-surface: #0f141e;
-    --tb-surface-2: #151c2a;
-    --tb-surface-3: #1b2335;
-    --tb-border: #212a3b;
-    --tb-border-strong: #2e3a4f;
+    /* Surfaces — layered warm near-black, the body of the brand mark */
+    --tb-bg: #0e0a0a;
+    --tb-surface: #151010;
+    --tb-surface-2: #1c1514;
+    --tb-surface-3: #241b1a;
+    --tb-border: #2c2221;
+    --tb-border-strong: #3d302e;
 
     /* Text */
-    --tb-text: #eef1f6;
-    --tb-text-muted: #9aa4b6;
-    --tb-text-faint: #626d80;
+    --tb-text: #f3eeed;
+    --tb-text-muted: #ab9f9d;
+    --tb-text-faint: #6f6361;
 
     /* Brand */
-    --tb-accent: #e0a93b;
-    --tb-accent-hover: #f1bd54;
-    --tb-accent-soft: rgba(224, 169, 59, 0.12);
-    --tb-accent-contrast: #1a1205;
+    --tb-accent: #ff6236;
+    --tb-accent-hover: #ff8452;
+    --tb-accent-soft: rgba(255, 98, 54, 0.12);
+    --tb-accent-contrast: #1f0703;
+    /* The mark's neon sweep (branding/icon.svg), for filled buttons and badges.
+       Crimson through to orange; it stops short of amber so it never reads as ergo. */
+    --tb-accent-fill: linear-gradient(135deg, hsl(352 94% 58%), hsl(4 96% 58%) 35%, hsl(16 100% 58%) 70%, hsl(28 100% 64%));
+    --tb-accent-fill-hover: linear-gradient(135deg, hsl(356 96% 64%), hsl(8 98% 63%) 35%, hsl(20 100% 63%) 70%, hsl(32 100% 70%));
+    --tb-accent-glow: 0 6px 22px -6px rgba(255, 82, 48, 0.55);
 
     /* Semantic */
     --tb-green: #2bb673;
     --tb-green-soft: rgba(43, 182, 115, 0.14);
-    --tb-red: #e5544b;
-    --tb-red-soft: rgba(229, 84, 75, 0.14);
+    --tb-red: #ef4a6b;
+    --tb-red-soft: rgba(239, 74, 107, 0.14);
 
     /* Shape & depth */
     --tb-radius: 14px;
@@ -48,8 +53,8 @@ body {
     margin: 0;
     height: 100%;
     background:
-        radial-gradient(1200px 600px at 78% -8%, rgba(224, 169, 59, 0.06), transparent 60%),
-        radial-gradient(900px 500px at 0% 0%, rgba(20, 148, 196, 0.05), transparent 55%),
+        radial-gradient(1200px 600px at 78% -8%, rgba(255, 98, 54, 0.07), transparent 60%),
+        radial-gradient(900px 500px at 0% 0%, rgba(232, 36, 78, 0.05), transparent 55%),
         var(--tb-bg);
     background-attachment: fixed;
     color: var(--tb-text);

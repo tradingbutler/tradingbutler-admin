@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, retry, throwError, timer } from 'rxjs';
 import { BrokerApi } from '../core/broker-api';
 import { Broker, IssuedKey } from '../core/broker';
 
@@ -29,6 +29,9 @@ export class Brokers implements OnInit {
     protected readonly brokers = signal<Broker[]>([]);
     protected readonly loading = signal(true);
     protected readonly loadError = signal('');
+    /** Retry currently in flight (0 = first attempt), shown next to the loader. */
+    protected readonly loadRetry = signal(0);
+    protected readonly maxLoadRetries = 3;
 
     protected readonly stats = computed(() => {
         const list = this.brokers();
@@ -75,19 +78,37 @@ export class Brokers implements OnInit {
         this.load();
     }
 
-    private load(): void {
+    protected load(): void {
         this.loading.set(true);
         this.loadError.set('');
-        this.api.list().subscribe({
-            next: (brokers) => {
-                this.brokers.set(brokers);
-                this.loading.set(false);
-            },
-            error: (err: HttpErrorResponse) => {
-                this.loadError.set(this.messageFrom(err, 'Failed to load brokers'));
-                this.loading.set(false);
-            },
-        });
+        this.loadRetry.set(0);
+        this.api
+            .list()
+            .pipe(
+                // Back off 1s, 2s, 3s between attempts before surfacing the error.
+                // Only network failures (status 0) and 5xx are worth retrying —
+                // a 4xx won't change on its own, so surface it immediately.
+                retry({
+                    count: this.maxLoadRetries,
+                    delay: (err: HttpErrorResponse, attempt) => {
+                        if (err.status !== 0 && err.status < 500) {
+                            return throwError(() => err);
+                        }
+                        this.loadRetry.set(attempt);
+                        return timer(attempt * 1000);
+                    },
+                }),
+            )
+            .subscribe({
+                next: (brokers) => {
+                    this.brokers.set(brokers);
+                    this.loading.set(false);
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.loadError.set(this.messageFrom(err, 'Failed to load brokers'));
+                    this.loading.set(false);
+                },
+            });
     }
 
     protected openForm(): void {

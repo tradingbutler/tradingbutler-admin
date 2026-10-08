@@ -60,10 +60,24 @@
     }
 
     @if (loading()) {
-        <p class="card__body muted">Loading…</p>
+        <div class="loader card__body" role="status" aria-live="polite">
+            <span class="loader__spinner" aria-hidden="true"></span>
+            <span class="muted">
+                Loading brokers…
+                @if (loadRetry() > 0) {
+                    (retry {{ loadRetry() }}/{{ maxLoadRetries }})
+                }
+            </span>
+        </div>
     } @else if (loadError(); as error) {
-        <div class="card__body">
-            <p class="form-error" role="alert">{{ error }}</p>
+        <div class="loader loader--error card__body">
+            <p class="loader__error" role="alert">
+                {{ error }}
+                @if (loadRetry() === maxLoadRetries) {
+                    (gave up after {{ maxLoadRetries }} retries)
+                }
+            </p>
+            <button class="btn-ghost" type="button" (click)="load()">Try again</button>
         </div>
     } @else if (brokers().length === 0) {
         <div class="empty card__body">
@@ -73,192 +87,203 @@
             </button>
         </div>
     } @else {
-        <table class="broker-table">
-            <thead>
-                <tr>
-                    <th class="logo-col"></th>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Key</th>
-                    <th>Open account URL</th>
-                    <th>Whitelisted IPs</th>
-                    <th>Symbol map</th>
-                    <th class="actions-col">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (broker of brokers(); track broker.id) {
+        <div class="table-scroll">
+            <table class="broker-table">
+                <thead>
                     <tr>
-                        <td class="logo-col">
-                            @if (broker.logo) {
-                                <img
-                                    class="broker-logo"
-                                    [src]="broker.logo"
-                                    [alt]="broker.name + ' logo'"
-                                />
-                            } @else {
-                                <span class="broker-logo-placeholder" aria-hidden="true"></span>
-                            }
-                        </td>
-                        <td class="tb-num">{{ broker.id }}</td>
-                        <td>{{ broker.name }}</td>
-                        <td>
-                            @if (broker.has_key) {
-                                <span class="badge badge--ok">Active</span>
-                            } @else {
-                                <span class="badge badge--off">No key</span>
-                            }
-                        </td>
-                        <td>
-                            @if (urlEditingId() === broker.id) {
-                                <div class="ip-edit">
-                                    <input
-                                        type="url"
-                                        autocomplete="off"
-                                        placeholder="https://example.com/open-account"
-                                        [(ngModel)]="urlEditInput"
-                                        [disabled]="busyId() === broker.id"
-                                    />
-                                    <div class="ip-edit__actions">
-                                        <button
-                                            class="btn-ghost btn-sm"
-                                            type="button"
-                                            [disabled]="busyId() === broker.id"
-                                            (click)="saveUrl(broker)"
-                                        >
-                                            Save
-                                        </button>
-                                        <button
-                                            class="btn-link"
-                                            type="button"
-                                            [disabled]="busyId() === broker.id"
-                                            (click)="cancelEditUrl()"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            } @else if (broker.open_account_url) {
-                                <a
-                                    class="url-link"
-                                    [href]="broker.open_account_url"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    >{{ broker.open_account_url }}</a
-                                >
-                            } @else {
-                                <span class="muted-inline">—</span>
-                            }
-                        </td>
-                        <td>
-                            @if (editingId() === broker.id) {
-                                <div class="ip-edit">
-                                    <input
-                                        type="text"
-                                        autocomplete="off"
-                                        spellcheck="false"
-                                        placeholder="comma/space separated, empty = any"
-                                        [(ngModel)]="editIps"
-                                        [disabled]="busyId() === broker.id"
-                                    />
-                                    <div class="ip-edit__actions">
-                                        <button
-                                            class="btn-ghost btn-sm"
-                                            type="button"
-                                            [disabled]="busyId() === broker.id"
-                                            (click)="saveIps(broker)"
-                                        >
-                                            Save
-                                        </button>
-                                        <button
-                                            class="btn-link"
-                                            type="button"
-                                            [disabled]="busyId() === broker.id"
-                                            (click)="cancelEditIps()"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            } @else if (broker.allowed_ips.length === 0) {
-                                <span class="muted-inline">Any</span>
-                            } @else {
-                                <span class="ip-chips">
-                                    @for (ip of broker.allowed_ips; track ip) {
-                                        <code class="ip-chip tb-num">{{ ip }}</code>
-                                    }
-                                </span>
-                            }
-                        </td>
-                        <td>
-                            @if (objectKeys(broker.symbol_map).length === 0) {
-                                <span class="muted-inline">None</span>
-                            } @else {
-                                <span class="ip-chips">
-                                    @for (alias of objectKeys(broker.symbol_map); track alias) {
-                                        <code class="ip-chip tb-num"
-                                            >{{ alias }} → {{ broker.symbol_map[alias] }}</code
-                                        >
-                                    }
-                                </span>
-                            }
-                        </td>
-                        <td class="actions-col">
-                            <div class="row-actions">
-                                <button
-                                    class="btn-link"
-                                    type="button"
-                                    [disabled]="busyId() === broker.id || editingId() === broker.id"
-                                    (click)="startEditIps(broker)"
-                                >
-                                    Edit IPs
-                                </button>
-                                <button
-                                    class="btn-link"
-                                    type="button"
-                                    [disabled]="busyId() === broker.id"
-                                    (click)="openSymbolMapEditor(broker)"
-                                >
-                                    Edit symbols
-                                </button>
-                                <button
-                                    class="btn-link"
-                                    type="button"
-                                    [disabled]="busyId() === broker.id || urlEditingId() === broker.id"
-                                    (click)="startEditUrl(broker)"
-                                >
-                                    Edit URL
-                                </button>
-                                <button
-                                    class="btn-link"
-                                    type="button"
-                                    [disabled]="busyId() === broker.id"
-                                    (click)="openLogoEditor(broker)"
-                                >
-                                    Edit logo
-                                </button>
-                                <button
-                                    class="btn-link"
-                                    type="button"
-                                    [disabled]="busyId() === broker.id"
-                                    (click)="regenerate(broker)"
-                                >
-                                    Regenerate
-                                </button>
-                                <button
-                                    class="btn-link btn-link--danger"
-                                    type="button"
-                                    [disabled]="busyId() === broker.id"
-                                    (click)="remove(broker)"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
+                        <th>Broker</th>
+                        <th>Key</th>
+                        <th>Open account URL</th>
+                        <th>Whitelisted IPs</th>
+                        <th>Symbol map</th>
+                        <th class="actions-col">Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @for (broker of brokers(); track broker.id) {
+                        <tr>
+                            <td>
+                                <div class="broker-cell">
+                                    @if (broker.logo) {
+                                        <img
+                                            class="broker-logo"
+                                            [src]="broker.logo"
+                                            [alt]="broker.name + ' logo'"
+                                        />
+                                    } @else {
+                                        <span
+                                            class="broker-logo-placeholder"
+                                            aria-hidden="true"
+                                        ></span>
+                                    }
+                                    <div class="broker-cell__text">
+                                        <span class="broker-cell__name">{{ broker.name }}</span>
+                                        <span class="broker-cell__id tb-num">{{ broker.id }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (broker.has_key) {
+                                    <span class="badge badge--ok">Active</span>
+                                } @else {
+                                    <span class="badge badge--off">No key</span>
+                                }
+                            </td>
+                            <td>
+                                @if (urlEditingId() === broker.id) {
+                                    <div class="ip-edit">
+                                        <input
+                                            type="url"
+                                            autocomplete="off"
+                                            placeholder="https://example.com/open-account"
+                                            [(ngModel)]="urlEditInput"
+                                            [disabled]="busyId() === broker.id"
+                                        />
+                                        <div class="ip-edit__actions">
+                                            <button
+                                                class="btn-ghost btn-sm"
+                                                type="button"
+                                                [disabled]="busyId() === broker.id"
+                                                (click)="saveUrl(broker)"
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                class="btn-link"
+                                                type="button"
+                                                [disabled]="busyId() === broker.id"
+                                                (click)="cancelEditUrl()"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                } @else if (broker.open_account_url) {
+                                    <a
+                                        class="url-link"
+                                        [href]="broker.open_account_url"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        >{{ broker.open_account_url }}</a
+                                    >
+                                } @else {
+                                    <span class="muted-inline">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (editingId() === broker.id) {
+                                    <div class="ip-edit">
+                                        <input
+                                            type="text"
+                                            autocomplete="off"
+                                            spellcheck="false"
+                                            placeholder="comma/space separated, empty = any"
+                                            [(ngModel)]="editIps"
+                                            [disabled]="busyId() === broker.id"
+                                        />
+                                        <div class="ip-edit__actions">
+                                            <button
+                                                class="btn-ghost btn-sm"
+                                                type="button"
+                                                [disabled]="busyId() === broker.id"
+                                                (click)="saveIps(broker)"
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                class="btn-link"
+                                                type="button"
+                                                [disabled]="busyId() === broker.id"
+                                                (click)="cancelEditIps()"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                } @else if (broker.allowed_ips.length === 0) {
+                                    <span class="muted-inline">Any</span>
+                                } @else {
+                                    <span class="ip-chips">
+                                        @for (ip of broker.allowed_ips; track ip) {
+                                            <code class="ip-chip tb-num">{{ ip }}</code>
+                                        }
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (objectKeys(broker.symbol_map).length === 0) {
+                                    <span class="muted-inline">None</span>
+                                } @else {
+                                    <span class="ip-chips">
+                                        @for (alias of objectKeys(broker.symbol_map); track alias) {
+                                            <code class="ip-chip tb-num"
+                                                >{{ alias }} → {{ broker.symbol_map[alias] }}</code
+                                            >
+                                        }
+                                    </span>
+                                }
+                            </td>
+                            <td class="actions-col">
+                                <div class="row-actions">
+                                    <button
+                                        class="btn-link"
+                                        type="button"
+                                        [disabled]="
+                                            busyId() === broker.id || editingId() === broker.id
+                                        "
+                                        (click)="startEditIps(broker)"
+                                    >
+                                        Edit IPs
+                                    </button>
+                                    <button
+                                        class="btn-link"
+                                        type="button"
+                                        [disabled]="busyId() === broker.id"
+                                        (click)="openSymbolMapEditor(broker)"
+                                    >
+                                        Edit symbols
+                                    </button>
+                                    <button
+                                        class="btn-link"
+                                        type="button"
+                                        [disabled]="
+                                            busyId() === broker.id || urlEditingId() === broker.id
+                                        "
+                                        (click)="startEditUrl(broker)"
+                                    >
+                                        Edit URL
+                                    </button>
+                                    <button
+                                        class="btn-link"
+                                        type="button"
+                                        [disabled]="busyId() === broker.id"
+                                        (click)="openLogoEditor(broker)"
+                                    >
+                                        Edit logo
+                                    </button>
+                                    <button
+                                        class="btn-link"
+                                        type="button"
+                                        [disabled]="busyId() === broker.id"
+                                        (click)="regenerate(broker)"
+                                    >
+                                        Regenerate
+                                    </button>
+                                    <button
+                                        class="btn-link btn-link--danger"
+                                        type="button"
+                                        [disabled]="busyId() === broker.id"
+                                        (click)="remove(broker)"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 </section>
 
@@ -292,7 +317,9 @@
                         [(ngModel)]="idInput"
                         [disabled]="submitting()"
                     />
-                    <small>Lowercase, no spaces or colons. Used in Redis keys and stream names.</small>
+                    <small
+                        >Lowercase, no spaces or colons. Used in Redis keys and stream names.</small
+                    >
                 </div>
 
                 <div class="field">
@@ -324,7 +351,18 @@
                             <div class="logo-zone__overlay">Change</div>
                         } @else {
                             <div class="logo-zone__empty">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 9.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" /></svg>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 9.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
                                 <span>Upload logo</span>
                             </div>
                         }
@@ -333,7 +371,7 @@
                         #createLogoRef
                         type="file"
                         accept="image/*"
-                        style="display:none"
+                        style="display: none"
                         (change)="onLogoFile($event)"
                         [disabled]="submitting()"
                     />
@@ -366,7 +404,9 @@
                         [(ngModel)]="ipsInput"
                         [disabled]="submitting()"
                     />
-                    <small>Comma- or space-separated IPs/CIDRs. Leave empty for no restriction.</small>
+                    <small
+                        >Comma- or space-separated IPs/CIDRs. Leave empty for no restriction.</small
+                    >
                 </div>
 
                 @if (formError(); as error) {
@@ -427,7 +467,18 @@
                         <div class="logo-zone__overlay">Change</div>
                     } @else {
                         <div class="logo-zone__empty">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 9.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" clip-rule="evenodd" /></svg>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 9.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
                             <span>Click to upload</span>
                         </div>
                     }
@@ -436,7 +487,7 @@
                     #editLogoRef
                     type="file"
                     accept="image/*"
-                    style="display:none"
+                    style="display: none"
                     (change)="onLogoEditFile($event)"
                     [disabled]="busyId() === brokerId"
                 />

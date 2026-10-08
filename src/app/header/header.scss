@@ -27,21 +27,6 @@
     margin-bottom: 2rem;
 }
 
-.sidebar__logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: var(--tb-accent);
-    color: var(--tb-accent-contrast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--tb-font-display);
-    font-weight: 800;
-    font-size: 0.8rem;
-    flex-shrink: 0;
-}
-
 .sidebar__brand-text {
     display: flex;
     flex-direction: column;
@@ -130,6 +115,7 @@
 @media (max-width: 768px) {
     :host {
         width: 100%;
+        height: auto;
     }
 
     .sidebar {

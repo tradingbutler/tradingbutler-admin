@@ -37,9 +37,10 @@ the `HOSTNAME`/`ID`-derived instance id each backend reports itself under), poll
 
 ```bash
 bun install
-bun run start        # ng serve on :4200, proxies /api → http://localhost:20000 (proxy.conf.json)
+bun run start        # ng serve on :4200, proxies /api → http://localhost:20001 (proxy.conf.json)
 bun run build        # production build → dist/admin (SPA + bundled server, see below)
-bun run serve:admin  # run the built server the way the container does, on :8080
+bun run serve:admin  # run the built server the way the container does, on :8080,
+                     # proxying /api → http://localhost:20001 (override with ADMIN_API_ORIGIN)
 ```
 
 Bun is the package manager (`bun.lock`, pinned in `.bun-version`); the Angular CLI itself still
@@ -64,5 +65,5 @@ Local `ng serve` never touches `server.ts` — dev proxying stays in `proxy.conf
 Run the backend alongside it:
 
 ```bash
-cd ../api && cargo run -p admin-api      # HTTP_PORT defaults to 20000; needs REDIS_URL
+cd ../api && make admin-api             # admin-api on :20001 (HTTP_PORT=20001); needs REDIS_URL
 ```

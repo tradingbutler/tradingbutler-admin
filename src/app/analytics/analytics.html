@@ -59,40 +59,44 @@
                     </div>
 
                     @if (instance.connections.length > 0) {
-                        <table class="analytics-table">
-                            <colgroup>
-                                <col class="col-connection" />
-                                <col class="col-ip" />
-                                <col class="col-broker" />
-                                <col class="col-connected" />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Connection</th>
-                                    <th>IP</th>
-                                    <th>Broker</th>
-                                    <th>Connected for</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (conn of instance.connections; track conn.id) {
+                        <div class="table-scroll">
+                            <table class="analytics-table">
+                                <colgroup>
+                                    <col class="col-connection" />
+                                    <col class="col-ip" />
+                                    <col class="col-broker" />
+                                    <col class="col-connected" />
+                                </colgroup>
+                                <thead>
                                     <tr>
-                                        <td class="tb-num">{{ conn.id }}</td>
-                                        <td class="tb-num">{{ conn.ip }}</td>
-                                        <td>
-                                            @if (conn.broker) {
-                                                {{ conn.broker }}
-                                            } @else {
-                                                <span class="muted-inline">Unauthenticated</span>
-                                            }
-                                        </td>
-                                        <td class="tb-num">
-                                            {{ connectedFor(conn.connected_at) }}
-                                        </td>
+                                        <th>Connection</th>
+                                        <th>IP</th>
+                                        <th>Broker</th>
+                                        <th>Connected for</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @for (conn of instance.connections; track conn.id) {
+                                        <tr>
+                                            <td class="tb-num">{{ conn.id }}</td>
+                                            <td class="tb-num">{{ conn.ip }}</td>
+                                            <td>
+                                                @if (conn.broker) {
+                                                    {{ conn.broker }}
+                                                } @else {
+                                                    <span class="muted-inline"
+                                                        >Unauthenticated</span
+                                                    >
+                                                }
+                                            </td>
+                                            <td class="tb-num">
+                                                {{ connectedFor(conn.connected_at) }}
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     }
                 </div>
             }
@@ -121,34 +125,36 @@
                     </div>
 
                     @if (instance.connections.length > 0) {
-                        <table class="analytics-table">
-                            <colgroup>
-                                <col class="col-connection" />
-                                <col class="col-ip" />
-                                <col class="col-broker" />
-                                <col class="col-connected" />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Connection</th>
-                                    <th>IP</th>
-                                    <th>&dash;</th>
-                                    <th>Connected for</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (conn of instance.connections; track conn.id) {
+                        <div class="table-scroll">
+                            <table class="analytics-table">
+                                <colgroup>
+                                    <col class="col-connection" />
+                                    <col class="col-ip" />
+                                    <col class="col-broker" />
+                                    <col class="col-connected" />
+                                </colgroup>
+                                <thead>
                                     <tr>
-                                        <td class="tb-num">{{ conn.id }}</td>
-                                        <td class="tb-num">{{ conn.ip }}</td>
-                                        <td class="tb-num">&nbsp;</td>
-                                        <td class="tb-num">
-                                            {{ connectedFor(conn.connected_at) }}
-                                        </td>
+                                        <th>Connection</th>
+                                        <th>IP</th>
+                                        <th>&dash;</th>
+                                        <th>Connected for</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @for (conn of instance.connections; track conn.id) {
+                                        <tr>
+                                            <td class="tb-num">{{ conn.id }}</td>
+                                            <td class="tb-num">{{ conn.ip }}</td>
+                                            <td class="tb-num">&nbsp;</td>
+                                            <td class="tb-num">
+                                                {{ connectedFor(conn.connected_at) }}
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     }
                 </div>
             }

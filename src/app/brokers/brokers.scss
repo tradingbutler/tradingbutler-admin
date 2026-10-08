@@ -94,7 +94,7 @@
     padding: 0.6rem 1.3rem;
     border: none;
     border-radius: 999px;
-    background: var(--tb-accent);
+    background: var(--tb-accent-fill);
     color: var(--tb-accent-contrast);
     font-weight: 700;
     font-size: 0.9rem;
@@ -105,7 +105,7 @@
         transform 0.15s ease;
 
     &:hover:not(:disabled) {
-        background: var(--tb-accent-hover);
+        background: var(--tb-accent-fill-hover);
         transform: translateY(-1px);
     }
 
@@ -247,7 +247,7 @@
         var(--tb-surface);
 
     .card__header {
-        border-bottom-color: rgba(224, 169, 59, 0.2);
+        border-bottom-color: rgba(255, 98, 54, 0.2);
     }
 }
 
@@ -390,11 +390,68 @@
     font-size: 0.88rem;
 }
 
+/* ── Load states ── */
+
+.loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    // Same height for the loading and error rows (the error row's button is the
+    // tallest content), so the card doesn't jump when "Try again" re-enters loading.
+    // 2rem content + .card__body's 1.25rem vertical padding on each side.
+    min-height: 4.5rem;
+    font-size: 0.85rem;
+}
+
+.loader__spinner {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border: 2px solid var(--tb-border-strong);
+    border-top-color: var(--tb-accent);
+    border-radius: 50%;
+    animation: loader-spin 0.8s linear infinite;
+}
+
+@keyframes loader-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loader__spinner {
+        animation-duration: 2.4s;
+    }
+}
+
+.loader--error {
+    flex-wrap: wrap;
+
+    .btn-ghost {
+        padding: 0.3rem 0.7rem;
+        font-size: 0.8rem;
+    }
+}
+
+.loader__error {
+    margin: 0;
+    color: var(--tb-red);
+}
+
 .empty {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+}
+
+// The table has more columns than fit on a phone; let it scroll sideways
+// inside the card rather than being clipped by the card's overflow: hidden.
+.table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .broker-table {
@@ -405,8 +462,17 @@
     th,
     td {
         text-align: left;
-        padding: 0.75rem 1.5rem;
+        padding: 0.75rem 0.9rem;
         border-bottom: 1px solid var(--tb-border);
+
+        // Outer edges line up with the card header's 1.5rem inset.
+        &:first-child {
+            padding-left: 1.5rem;
+        }
+
+        &:last-child {
+            padding-right: 1.5rem;
+        }
     }
 
     th {
@@ -431,10 +497,31 @@
     }
 }
 
-.logo-col {
-    width: 48px;
-    padding-left: 1.5rem !important;
-    padding-right: 0.5rem !important;
+// Logo + name with the id underneath — one column instead of three.
+.broker-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.broker-logo,
+.broker-logo-placeholder {
+    flex-shrink: 0;
+}
+
+.broker-cell__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.broker-cell__name {
+    font-weight: 600;
+}
+
+.broker-cell__id {
+    font-size: 0.78rem;
+    color: var(--tb-text-muted);
 }
 
 .broker-logo {
@@ -457,10 +544,16 @@
 }
 
 .url-link {
+    // One line, cut with an ellipsis — the full URL is in the href.
+    display: inline-block;
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
     color: var(--tb-accent);
     text-decoration: none;
     font-size: 0.85rem;
-    word-break: break-all;
 
     &:hover {
         text-decoration: underline;
@@ -472,10 +565,12 @@
     white-space: nowrap;
 }
 
+// 3×2 grid: with `.actions-col { width: 1% }` a wrapping flex row collapsed
+// to one action per line, making every row ~6 lines tall.
 .row-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    gap: 0.35rem 0.7rem;
 }
 
 .badge {
@@ -505,6 +600,7 @@
 }
 
 .ip-chip {
+    white-space: nowrap;
     padding: 0.1rem 0.45rem;
     border-radius: var(--tb-radius-sm);
     border: 1px solid var(--tb-border);
@@ -680,9 +776,44 @@
 
 /* ── Responsive ── */
 
+@media (max-width: 768px) {
+    // Inside the horizontal scroller, keep cells on one line so columns keep a
+    // readable width instead of collapsing into tall, narrow strips.
+    .broker-table {
+        th,
+        td {
+            white-space: nowrap;
+        }
+    }
+
+    // Single-line rows on mobile: actions and chips in one row each.
+    .row-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .ip-chips {
+        flex-wrap: nowrap;
+    }
+}
+
 @media (max-width: 560px) {
+    // Keep all three stats on one row (2 + 1 orphan looked broken).
     .stats {
-        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+    }
+
+    .stat {
+        padding: 0.8rem 0.85rem;
+    }
+
+    .stat__value {
+        font-size: 1.5rem;
+    }
+
+    .stat__label {
+        font-size: 0.62rem;
+        letter-spacing: 0.05em;
     }
 }
 
@@ -698,8 +829,8 @@
             padding: 0.65rem 1rem;
         }
 
-        th:nth-child(4),
-        td:nth-child(4) {
+        th:nth-child(2),
+        td:nth-child(2) {
             display: none;
         }
     }

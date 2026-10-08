@@ -40,11 +40,15 @@
 }
 
 @media (max-width: 768px) {
+    // Stacked layout: header bar on top, main fills the rest and scrolls (body
+    // is overflow: hidden). `height: auto` lets flex size main instead of
+    // forcing it to 100% of the shell on top of the header.
     .admin-shell {
         flex-direction: column;
     }
 
     .admin-main {
+        height: auto;
         padding: 1.5rem 1rem 3rem;
     }
 }
