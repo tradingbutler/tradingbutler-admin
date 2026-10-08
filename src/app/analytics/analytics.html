@@ -61,15 +61,9 @@
                     @if (instance.connections.length > 0) {
                         <div class="table-scroll">
                             <table class="analytics-table">
-                                <colgroup>
-                                    <col class="col-connection" />
-                                    <col class="col-ip" />
-                                    <col class="col-broker" />
-                                    <col class="col-connected" />
-                                </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Connection</th>
+                                        <th class="conn-col">Connection</th>
                                         <th>IP</th>
                                         <th>Broker</th>
                                         <th>Connected for</th>
@@ -78,7 +72,9 @@
                                 <tbody>
                                     @for (conn of instance.connections; track conn.id) {
                                         <tr>
-                                            <td class="tb-num">{{ conn.id }}</td>
+                                            <td class="tb-num conn-col" [title]="conn.id">
+                                                {{ conn.id }}
+                                            </td>
                                             <td class="tb-num">{{ conn.ip }}</td>
                                             <td>
                                                 @if (conn.broker) {
@@ -127,26 +123,20 @@
                     @if (instance.connections.length > 0) {
                         <div class="table-scroll">
                             <table class="analytics-table">
-                                <colgroup>
-                                    <col class="col-connection" />
-                                    <col class="col-ip" />
-                                    <col class="col-broker" />
-                                    <col class="col-connected" />
-                                </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Connection</th>
+                                        <th class="conn-col">Connection</th>
                                         <th>IP</th>
-                                        <th>&dash;</th>
                                         <th>Connected for</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @for (conn of instance.connections; track conn.id) {
                                         <tr>
-                                            <td class="tb-num">{{ conn.id }}</td>
+                                            <td class="tb-num conn-col" [title]="conn.id">
+                                                {{ conn.id }}
+                                            </td>
                                             <td class="tb-num">{{ conn.ip }}</td>
-                                            <td class="tb-num">&nbsp;</td>
                                             <td class="tb-num">
                                                 {{ connectedFor(conn.connected_at) }}
                                             </td>

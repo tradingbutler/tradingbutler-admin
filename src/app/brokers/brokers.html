@@ -96,7 +96,7 @@
                         <th>Open account URL</th>
                         <th>Whitelisted IPs</th>
                         <th>Symbol map</th>
-                        <th class="actions-col">Actions</th>
+                        <th class="actions-col"><span class="sr-only">Actions</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -224,56 +224,81 @@
                                 }
                             </td>
                             <td class="actions-col">
-                                <div class="row-actions">
+                                <button
+                                    #menuBtn
+                                    class="row-menu-btn"
+                                    type="button"
+                                    aria-haspopup="menu"
+                                    [attr.aria-label]="'Actions for ' + broker.name"
+                                    [attr.popovertarget]="'row-menu-' + broker.id"
+                                >
+                                    <span aria-hidden="true">⋯</span>
+                                </button>
+                                <div
+                                    #menu
+                                    class="row-menu"
+                                    role="menu"
+                                    popover
+                                    [id]="'row-menu-' + broker.id"
+                                    (beforetoggle)="onMenuBeforeToggle($event, menuBtn)"
+                                    (toggle)="onMenuToggle($event)"
+                                >
                                     <button
-                                        class="btn-link"
+                                        class="row-menu__item"
                                         type="button"
+                                        role="menuitem"
                                         [disabled]="
                                             busyId() === broker.id || editingId() === broker.id
                                         "
-                                        (click)="startEditIps(broker)"
+                                        (click)="menu.hidePopover(); startEditIps(broker)"
                                     >
                                         Edit IPs
                                     </button>
                                     <button
-                                        class="btn-link"
+                                        class="row-menu__item"
                                         type="button"
+                                        role="menuitem"
                                         [disabled]="busyId() === broker.id"
-                                        (click)="openSymbolMapEditor(broker)"
+                                        (click)="menu.hidePopover(); openSymbolMapEditor(broker)"
                                     >
                                         Edit symbols
                                     </button>
                                     <button
-                                        class="btn-link"
+                                        class="row-menu__item"
                                         type="button"
+                                        role="menuitem"
                                         [disabled]="
                                             busyId() === broker.id || urlEditingId() === broker.id
                                         "
-                                        (click)="startEditUrl(broker)"
+                                        (click)="menu.hidePopover(); startEditUrl(broker)"
                                     >
                                         Edit URL
                                     </button>
                                     <button
-                                        class="btn-link"
+                                        class="row-menu__item"
                                         type="button"
+                                        role="menuitem"
                                         [disabled]="busyId() === broker.id"
-                                        (click)="openLogoEditor(broker)"
+                                        (click)="menu.hidePopover(); openLogoEditor(broker)"
                                     >
                                         Edit logo
                                     </button>
                                     <button
-                                        class="btn-link"
+                                        class="row-menu__item"
                                         type="button"
+                                        role="menuitem"
                                         [disabled]="busyId() === broker.id"
-                                        (click)="regenerate(broker)"
+                                        (click)="menu.hidePopover(); regenerate(broker)"
                                     >
-                                        Regenerate
+                                        Regenerate key
                                     </button>
+                                    <hr class="row-menu__sep" />
                                     <button
-                                        class="btn-link btn-link--danger"
+                                        class="row-menu__item row-menu__item--danger"
                                         type="button"
+                                        role="menuitem"
                                         [disabled]="busyId() === broker.id"
-                                        (click)="remove(broker)"
+                                        (click)="menu.hidePopover(); remove(broker)"
                                     >
                                         Delete
                                     </button>

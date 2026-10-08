@@ -513,6 +513,7 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    white-space: nowrap;
 }
 
 .broker-cell__name {
@@ -546,7 +547,7 @@
 .url-link {
     // One line, cut with an ellipsis — the full URL is in the href.
     display: inline-block;
-    max-width: 8rem;
+    max-width: 9rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -565,12 +566,111 @@
     white-space: nowrap;
 }
 
-// 3×2 grid: with `.actions-col { width: 1% }` a wrapping flex row collapsed
-// to one action per line, making every row ~6 lines tall.
-.row-actions {
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.row-menu-btn {
     display: grid;
-    grid-template-columns: repeat(3, max-content);
-    gap: 0.35rem 0.7rem;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--tb-border);
+    border-radius: var(--tb-radius-sm);
+    background: var(--tb-surface-2);
+    color: var(--tb-text-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        color 0.15s ease;
+
+    &:hover,
+    &.row-menu-btn--open {
+        border-color: var(--tb-accent);
+        color: var(--tb-accent);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--tb-accent);
+        outline-offset: 1px;
+    }
+}
+
+// Popover: rendered in the top layer, positioned (fixed) by
+// Brokers.onMenuBeforeToggle — right edge aligned to the ⋯ button.
+.row-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    transform: translateX(-100%);
+    min-width: 11rem;
+    padding: 0.3rem;
+    border: 1px solid var(--tb-border-strong);
+    border-radius: var(--tb-radius-sm);
+    background: var(--tb-surface);
+    box-shadow: var(--tb-shadow);
+    color: var(--tb-text);
+
+    &:popover-open {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.row-menu--up {
+    transform: translate(-100%, -100%);
+}
+
+.row-menu__item {
+    padding: 0.45rem 0.7rem;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--tb-text);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+        outline: none;
+        background: var(--tb-accent-soft);
+        color: var(--tb-accent);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+.row-menu__item--danger {
+    color: var(--tb-red);
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+        background: var(--tb-red-soft);
+        color: var(--tb-red);
+    }
+}
+
+.row-menu__sep {
+    margin: 0.3rem 0.2rem;
+    border: none;
+    border-top: 1px solid var(--tb-border);
 }
 
 .badge {
@@ -593,9 +693,11 @@
     color: var(--tb-red);
 }
 
+// IPs / symbol mappings: one entry per line, as a list.
 .ip-chips {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 0.35rem;
 }
 
@@ -784,16 +886,6 @@
         td {
             white-space: nowrap;
         }
-    }
-
-    // Single-line rows on mobile: actions and chips in one row each.
-    .row-actions {
-        display: flex;
-        gap: 0.75rem;
-    }
-
-    .ip-chips {
-        flex-wrap: nowrap;
     }
 }
 

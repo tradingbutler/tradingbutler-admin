@@ -147,9 +147,12 @@
     -webkit-overflow-scrolling: touch;
 }
 
+// Auto layout: IP / broker / duration shrink to their content and the
+// connection id takes the rest, truncating only when it genuinely doesn't fit.
+// min-width keeps phones scrolling sideways instead of squeezing the id away.
 .analytics-table {
     width: 100%;
-    table-layout: fixed;
+    min-width: 36rem;
     border-collapse: collapse;
     font-size: 0.91rem;
 
@@ -160,10 +163,17 @@
         border-bottom: 1px solid var(--tb-border);
     }
 
+    th,
     td {
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    .conn-col {
+        width: 100%;
+        max-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     th {
@@ -187,21 +197,6 @@
 /* Shared across both tables so matching columns line up at the same width;
    the first (connection) column stays biggest but is capped rather than
    left to consume all remaining space. */
-.col-connection {
-    width: 22rem;
-}
-
-.col-ip {
-    width: 12rem;
-}
-
-.col-broker {
-    width: 10rem;
-}
-
-.col-connected {
-    width: 10rem;
-}
 
 /* ── Responsive ── */
 
